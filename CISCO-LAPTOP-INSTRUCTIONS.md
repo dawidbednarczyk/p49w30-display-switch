@@ -4,10 +4,9 @@
 
 ## The rule
 
-When the monitor's right PBP pane is showing **DisplayPort** (that is the Cisco laptop's
-output — the Mac side switched the pane to DisplayPort to view/work with you), you are the
-one who switches it **back to HDMI 1** when the session is done. Implement the toggle hotkey
-on the laptop **now** so this is one keypress:
+When the monitor's left PBP pane (the Cisco laptop's half) is showing **DisplayPort**, you
+are the one who switches it **back to HDMI 1** when the session is done. Implement the
+toggle hotkey on the laptop **now** so this is one keypress:
 
 - **Ctrl+Alt+D** — toggle right pane: HDMI 1 ↔ DisplayPort
 - The Mac mini has the mirror shortcut ⌃⇧⌘D (Ctrl+Shift+Cmd+D), live and verified.
