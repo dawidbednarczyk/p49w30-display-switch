@@ -4,6 +4,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = (ROOT / "P49w30DisplaySwitch.ahk").read_text(encoding="utf-8")
+MAC_SCRIPT_PATH = ROOT / "P49w30DisplaySwitch.lua"
 
 
 def toggle_value(value: int) -> int | None:
@@ -42,6 +43,19 @@ class ToggleContractTests(unittest.TestCase):
             "lowByte + nextHighByte * 256",
         ):
             self.assertIn(required, SCRIPT)
+
+    def test_mac_hotkey_has_same_safe_toggle_contract(self) -> None:
+        mac_script = MAC_SCRIPT_PATH.read_text(encoding="utf-8")
+        for required in (
+            '{"ctrl", "cmd", "shift"}',
+            'hs.hotkey.bind(MODIFIERS, "d"',
+            "STABILITY_WAIT_SECONDS = 6",
+            "secondValue ~= firstValue",
+            "KNOWN_VALUES[value]",
+            "lowByte + nextHighByte * 256",
+            '"-vcp=0x60"',
+        ):
+            self.assertIn(required, mac_script)
 
 
 if __name__ == "__main__":

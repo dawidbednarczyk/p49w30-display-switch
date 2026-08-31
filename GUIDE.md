@@ -6,8 +6,8 @@
 
 ## Layout (as physically arranged)
 
-- **Right half = Mac mini**, fed by USB-C (input value `49` / 0x31). This pane must NEVER change.
-- **Left half = Cisco laptop**, fed by HDMI 1 (home) or DisplayPort — both cables from the laptop side.
+- **Left half = Mac mini**, fed by USB-C (input value `49` / 0x31). This pane must NEVER change.
+- **Right half = Cisco laptop**, fed by HDMI 1 (home) or DisplayPort — both cables from the laptop side.
 
 ## The mechanism (empirically verified on this exact monitor, not from documentation)
 
@@ -16,14 +16,25 @@ breaks every standard tool:
 
 | byte | meaning | values |
 |------|---------|--------|
-| **low byte** | the **Mac mini USB-C input** (right half) | `49` (0x31) — **always preserve, never write anything else here** |
-| **high byte** | the **laptop input** (left half) | `0x0F` (15) = DisplayPort 1 · `0x11` (17) = HDMI 1 |
+| **low byte** | the **Mac mini USB-C input** (left half) | `49` (0x31) — **always preserve, never write anything else here** |
+| **high byte** | the **laptop input** (right half) | `0x0F` (15) = DisplayPort 1 · `0x11` (17) = HDMI 1 |
 
 Verified full values: **4401** = laptop on HDMI 1 (home) · **3889** = laptop on DisplayPort.
 An 8-bit write (what normal tools send) lands in the low byte and clobbers the Mac's pane.
 
 **Toggle logic (mandatory read-modify-write):**
 read 0x60 → keep `low = v % 256` → flip `high`: 0x11→0x0F or 0x0F→0x11 → write `low + high*256`.
+
+## Mac mini hotkey
+
+`P49w30DisplaySwitch.lua` binds **Ctrl+Command+Shift+D** in Hammerspoon and uses the
+installed BetterDisplay CLI to read and write VCP `0x60`. It applies the same safety
+contract as the Windows implementation: only `4401`/`3889` are accepted, two identical
+reads six seconds apart are required, and the low byte is preserved.
+
+The live Hammerspoon configuration loads the repository module directly. BetterDisplay must
+remain running with CLI integration enabled. The binding and both hardware transitions were
+verified on the Mac mini on 2026-08-31; the monitor was left at HDMI 1 (`4401`).
 
 ## Windows installation
 
@@ -72,7 +83,7 @@ but one canonical shortcut is easier to troubleshoot.
   and retry. Check the raw `/GetValueValue` command; only `4401` or `3889` is accepted.
 - **Hotkey does nothing**: confirm AutoHotkey v2 is running, only one script instance exists,
   and corporate endpoint policy has not blocked AutoHotkey or ControlMyMonitor.
-- **Mac/right pane changes**: stop immediately and exit the script. Restore the monitor with
+- **Mac/left pane changes**: stop immediately and exit the script. Restore the monitor with
   its joystick and verify this unmodified script is being used; an 8-bit VCP write is unsafe.
 
 Hardware-free logic check on Windows:
@@ -119,7 +130,7 @@ Requirements (manual + verified in practice):
 
 ### Independence ruling (Dawid, 31.08) — do not re-couple
 
-The pane toggle (⌃⇧⌘D on Mac / Ctrl+Alt+D on the laptop) and the KVM (double-Shift) are
+The pane toggle (⌃⌘⇧D on Mac / Ctrl+Alt+D on the laptop) and the KVM (double-Shift) are
 **deliberately independent**: sometimes he wants to change screens without moving the
 keyboard+mouse. A Hammerspoon listener that fired the pane toggle on double-Shift was built
 briefly and removed at his request. Also, **synthetic Shift-taps from the OS can never trigger
@@ -127,18 +138,18 @@ the eKVM** — HID traffic flows keyboard → monitor → computer, never back u
 shortcut can move the KVM. Double-tap the physical Shift key; that is the only way.
 
 ## Acceptance test (pane toggle)
-1. With PBP active and the Mac visible on the right, `GetValueValue 60` returns exactly
+1. With PBP active and the Mac visible on the left, `GetValueValue 60` returns exactly
    `4401` or `3889` for the configured target.
-2. Press Ctrl+Alt+D once. After the six-second safety check, the laptop's left pane switches;
-   the right Mac pane never changes.
+2. Press Ctrl+Alt+D once. After the six-second safety check, the laptop's right pane switches;
+   the left Mac pane never changes.
 3. Wait at least six more seconds and re-read: `3889` means laptop DisplayPort; `4401` means
    laptop HDMI 1.
-4. Press the hotkey again and confirm the reverse transition and unchanged Mac/right pane.
+4. Press the hotkey again and confirm the reverse transition and unchanged Mac/left pane.
 5. During a post-switch interval, press the hotkey and confirm an unsafe/not-stable read
    produces a notification and no additional display switch.
-6. Before finishing, leave the laptop's left pane on **HDMI 1** (`4401`).
+6. Before finishing, leave the laptop's right pane on **HDMI 1** (`4401`).
 
-If the Mac/right pane ever changes: **STOP** — the write was 8-bit; re-check that the installed
+If the Mac/left pane ever changes: **STOP** — the write was 8-bit; re-check that the installed
 script is unmodified and uses `lowByte + nextHighByte*256`.
 
 These hardware checks must be performed on the Cisco laptop and physical P49w-30. They

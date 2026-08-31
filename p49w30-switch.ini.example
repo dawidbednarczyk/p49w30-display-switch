@@ -1,5 +1,5 @@
 [P49w30]
-; Full path to NirSoft ControlMyMonitor.exe. This script changes the laptop/left pane.
+; Full path to NirSoft ControlMyMonitor.exe. This script changes the laptop/right pane.
 ControlMyMonitorPath=C:\Tools\ControlMyMonitor\ControlMyMonitor.exe
 
 ; Use the exact monitor identifier reported by:

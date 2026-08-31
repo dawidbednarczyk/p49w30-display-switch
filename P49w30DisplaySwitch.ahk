@@ -2,7 +2,7 @@
 #SingleInstance Force
 #MaxThreadsPerHotkey 1
 
-; Lenovo ThinkVision P49w-30 laptop/left-pane input switch.
+; Lenovo ThinkVision P49w-30 laptop/right-pane input switch.
 ; Copy p49w30-switch.ini.example to p49w30-switch.ini to override defaults.
 
 global HDMI1_VALUE := 4401       ; 0x1131: right HDMI 1, left USB-C
