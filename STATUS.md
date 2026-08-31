@@ -14,6 +14,8 @@
 - Mac Ctrl+Command+Shift+D Hammerspoon binding added using the installed BetterDisplay CLI;
   it shares the exact-value and six-second stable-read safety contract. Both directions were
   hardware-verified on 2026-08-31 and the final state was restored to HDMI 1 (`4401`).
+- User acceptance completed on 2026-08-31: Ctrl+Command+Shift+D works as intended. Closeout
+  re-read confirmed `4401,4401`, leaving the laptop/right pane on HDMI 1.
 
 ## Cisco laptop actions — pending
 
@@ -28,3 +30,8 @@
 
 The Windows runtime, Cisco corporate policy, and laptop-originated DDC path remain unverified.
 The Mac BetterDisplay path and physical `3889 ↔ 4401` transitions have been verified.
+
+## Closeout
+
+Project implementation is complete and accepted. The repository has no active work except
+the explicitly listed Cisco laptop installation and hardware acceptance steps above.
