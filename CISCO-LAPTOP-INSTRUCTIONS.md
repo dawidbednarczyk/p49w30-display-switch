@@ -8,7 +8,7 @@ When the monitor's left PBP pane (the Cisco laptop's half) is showing **DisplayP
 are the one who switches it **back to HDMI 1** when the session is done. Implement the
 toggle hotkey on the laptop **now** so this is one keypress:
 
-- **Ctrl+Alt+D** — toggle right pane: HDMI 1 ↔ DisplayPort
+- **Ctrl+Alt+D** — toggle the laptop's left pane: HDMI 1 ↔ DisplayPort
 - The Mac mini has the mirror shortcut ⌃⇧⌘D (Ctrl+Shift+Cmd+D), live and verified.
 
 Net effect: either machine can flip the pane in either direction. Dawid never has to reach
@@ -24,8 +24,13 @@ software Shift events cannot reach the monitor's eKVM detector anyway (HID is on
 coupling was explicitly rejected. Also verified: the eKVM is not DDC-controllable — do not
 spend time attempting KVM over DDC (full 256-code VCP sweeps identical in both KVM states).
 
-## How to implement
+## Laptop installation and standing operation
 
-Full implementation guide with the exact mechanism, commands, AutoHotkey v2 script, and
-acceptance test: **[GUIDE.md](GUIDE.md)** in this repo. Read it before writing any code —
-VCP 0x60 is 16-bit on this monitor and an 8-bit write will clobber the Mac's pane.
+The implementation is **[P49w30DisplaySwitch.ahk](P49w30DisplaySwitch.ahk)**. Follow the
+install and acceptance steps in **[GUIDE.md](GUIDE.md)** on the Cisco laptop. VCP 0x60 is
+16-bit on this monitor; never replace the script's full-value read-modify-write with an
+8-bit write, which would clobber the Mac pane.
+
+At the end of any laptop work session, if the laptop's left pane is on DisplayPort, press
+**Ctrl+Alt+D**, wait for the switch, and leave it on **HDMI 1**. The script deliberately
+waits six seconds for two matching safe reads, so the hotkey is not instantaneous.

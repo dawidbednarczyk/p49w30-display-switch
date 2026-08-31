@@ -25,13 +25,23 @@ An 8-bit write (what normal tools send) lands in the low byte and clobbers the M
 **Toggle logic (mandatory read-modify-write):**
 read 0x60 → keep `low = v % 256` → flip `high`: 0x11→0x0F or 0x0F→0x11 → write `low + high*256`.
 
-## Windows implementation
+## Windows installation
 
 Tools (both free, no install order dependency):
 1. **ControlMyMonitor** (NirSoft) — DDC CLI. Put it e.g. in `C:\Tools\ControlMyMonitor\`.
 2. **AutoHotkey v2** — for the hotkey.
 
-Commands (verify in cmd.exe first):
+1. Install **AutoHotkey v2** (not v1).
+2. Download ControlMyMonitor from NirSoft and place `ControlMyMonitor.exe` in
+   `C:\Tools\ControlMyMonitor\` (or another approved local directory).
+3. Copy `P49w30DisplaySwitch.ahk` and `p49w30-switch.ini.example` from this repository to a
+   stable local folder. Rename the example file to `p49w30-switch.ini`.
+4. In `p49w30-switch.ini`, set `ControlMyMonitorPath` and set `MonitorTarget` to the exact
+   P49w-30 identifier returned by `/MonitorEnum`. Avoid `Primary` if it is ambiguous.
+5. Double-click the `.ahk` file, then press **Ctrl+Alt+D**. The safety check takes six
+   seconds before a write; this is intentional.
+
+Commands to run in `cmd.exe` before enabling startup:
 ```
 ControlMyMonitor.exe /MonitorEnum                       :: find the monitor name; "Primary" usually works
 ControlMyMonitor.exe /GetValueValue Primary 60 /stext %TEMP%\ddc60.txt   :: read — expect 4401 or 3889
@@ -39,28 +49,34 @@ ControlMyMonitor.exe /SetValue Primary 60 3889          :: laptop pane -> Displa
 ControlMyMonitor.exe /SetValue Primary 60 4401          :: laptop pane -> HDMI 1
 ```
 
-AutoHotkey v2 script (Ctrl+Alt+D — Windows has no Command key; this mirrors the Mac's ⌃⇧⌘D):
-```ahk
-#Requires AutoHotkey v2.0
-CMM := "C:\Tools\ControlMyMonitor\ControlMyMonitor.exe"   ; adjust path
-tmp := A_Temp "\ddc60.txt"
+The shipped script accepts only the exact full values `4401` and `3889`, deletes the old
+read file before every query, checks command success, and requires two identical reads six
+seconds apart. A missing, malformed, unexpected, or changing read aborts without a write.
 
-^!d:: {
-    RunWait('"' CMM '" /GetValueValue Primary 60 /stext "' tmp '"', , "Hide")
-    v := 0
-    if RegExMatch(FileRead(tmp), "\b(\d{3,5})\b", &m)
-        v := Integer(m[1])
-    if (v < 256) {
-        TrayTip("PBP toggle", "Bad DDC read (" v ") — retry in ~5s", 2)
-        return
-    }
-    lo := Mod(v, 256), hi := Floor(v / 256)
-    newHi := (hi = 0x0F) ? 0x11 : 0x0F
-    RunWait('"' CMM '" /SetValue Primary 60 ' (lo + newHi * 256), , "Hide")
-    TrayTip("PBP toggle", (newHi = 0x0F) ? "Laptop pane → DisplayPort" : "Laptop pane → HDMI 1", 2)
-}
-```
-Add the script to shell:startup so the hotkey survives reboots.
+## Start automatically
+
+1. Press **Win+R**, enter `shell:startup`, and press Enter.
+2. Create a shortcut there to the stable copy of `P49w30DisplaySwitch.ahk`.
+3. Sign out and back in. Confirm the AutoHotkey tray icon appears and test **Ctrl+Alt+D**.
+
+Do not place a second copy in startup: `#SingleInstance Force` prevents duplicate instances,
+but one canonical shortcut is easier to troubleshoot.
+
+## Troubleshooting
+
+- **“ControlMyMonitor was not found”**: correct `ControlMyMonitorPath` in the INI beside the
+  script. Do not add quotes inside the INI value.
+- **Wrong/no monitor reacts**: run `/MonitorEnum`, copy the exact P49w-30 identifier into
+  `MonitorTarget`, and keep DDC/CI enabled in the monitor OSD.
+- **Unsafe/not-stable read notification**: do not force a write. Wait at least six seconds
+  and retry. Check the raw `/GetValueValue` command; only `4401` or `3889` is accepted.
+- **Hotkey does nothing**: confirm AutoHotkey v2 is running, only one script instance exists,
+  and corporate endpoint policy has not blocked AutoHotkey or ControlMyMonitor.
+- **Mac/right pane changes**: stop immediately and exit the script. Restore the monitor with
+  its joystick and verify this unmodified script is being used; an 8-bit VCP write is unsafe.
+
+Hardware-free logic check on Windows:
+`AutoHotkey64.exe P49w30DisplaySwitch.ahk --self-test`.
 
 ## Caveats (all observed on the real setup)
 - DDC commands travel over the machine's own video cable and work **regardless of which
@@ -111,8 +127,19 @@ the eKVM** — HID traffic flows keyboard → monitor → computer, never back u
 shortcut can move the KVM. Double-tap the physical Shift key; that is the only way.
 
 ## Acceptance test (pane toggle)
-1. `GetValueValue 60` returns 4401 or 3889.
-2. Toggle → laptop pane visibly switches within ~2 s.
-3. Re-read after 5 s → value matches the new state.
-4. The Mac pane (USB-C) never changes. If it ever does: STOP — the write was 8-bit; re-check
-   the script uses `lo + newHi*256`.
+1. With PBP active and the Mac visible on the right, `GetValueValue 60` returns exactly
+   `4401` or `3889` for the configured target.
+2. Press Ctrl+Alt+D once. After the six-second safety check, the laptop's left pane switches;
+   the right Mac pane never changes.
+3. Wait at least six more seconds and re-read: `3889` means laptop DisplayPort; `4401` means
+   laptop HDMI 1.
+4. Press the hotkey again and confirm the reverse transition and unchanged Mac/right pane.
+5. During a post-switch interval, press the hotkey and confirm an unsafe/not-stable read
+   produces a notification and no additional display switch.
+6. Before finishing, leave the laptop's left pane on **HDMI 1** (`4401`).
+
+If the Mac/right pane ever changes: **STOP** — the write was 8-bit; re-check that the installed
+script is unmodified and uses `lowByte + nextHighByte*256`.
+
+These hardware checks must be performed on the Cisco laptop and physical P49w-30. They
+cannot be truthfully completed from the Mac-side repository.

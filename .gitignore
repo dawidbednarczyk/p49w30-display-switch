@@ -1,0 +1,15 @@
+# Per-machine path and monitor selection (copy from the tracked example).
+p49w30-switch.ini
+
+# Local test/runtime artifacts.
+__pycache__/
+*.pyc
+*.log
+
+# Never commit local credentials if tooling is added later.
+.env
+*.env
+*.pem
+*.key
+credentials.json
+.secrets-quarantine/

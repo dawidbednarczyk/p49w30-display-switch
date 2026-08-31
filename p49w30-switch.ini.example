@@ -1,0 +1,8 @@
+[P49w30]
+; Full path to NirSoft ControlMyMonitor.exe. This script changes the laptop/left pane.
+ControlMyMonitorPath=C:\Tools\ControlMyMonitor\ControlMyMonitor.exe
+
+; Use the exact monitor identifier reported by:
+; ControlMyMonitor.exe /MonitorEnum
+; "Primary" is only suitable when it unambiguously identifies the P49w-30.
+MonitorTarget=Primary
