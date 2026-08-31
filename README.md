@@ -17,5 +17,7 @@ Mechanism in one line: VCP 0x60 is 16-bit — low byte = the Mac's USB-C input (
 right half), high byte = the laptop's input (`0x0F` DisplayPort / `0x11` HDMI 1, left half)
 — toggle via read-modify-write (`4401` = laptop HDMI 1, `3889` = laptop DisplayPort).
 
-KVM: not DDC-controllable (verified 2026-08-31), but the monitor's documented eKVM triggers
-(double-tap Shift in 0.5 s / hold both mouse buttons 3 s) are synthesizable — see GUIDE.md.
+KVM: **solved natively — double-tap Shift within 0.5 s** (the monitor's eKVM trigger,
+verified working 2026-08-31). Not DDC-controllable; pane shortcuts and KVM are deliberately
+independent (Dawid's ruling 31.08). Rear-port diagram + which port is the eKVM port:
+[GUIDE.md](GUIDE.md) · [images/p49w30-rear-ports.png](images/p49w30-rear-ports.png).

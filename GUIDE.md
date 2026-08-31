@@ -71,23 +71,44 @@ Add the script to shell:startup so the hotkey survives reboots.
 
 ## eKVM — how KVM switching actually works on this monitor
 
-**There is no mouse-edge/screen-roaming switching.** Per the Lenovo documentation the eKVM
-triggers are:
+**There is no mouse-edge/screen-roaming switching.** The eKVM triggers are:
 1. **Double-tap Shift within 0.5 s** (enable: OSD → Port Settings → KVM Setting → eKVM → Keyboard On)
 2. **Hold both mouse buttons (left+right) for 3 s** (enable: same menu → Mouse On)
 
-Requirements from the manual:
+**Status 31.08: VERIFIED on this unit — double-tap Shift switches the KVM.** Dawid confirmed
+by experiment and adopted it as the standard way to move keyboard+mouse.
+
+Requirements (manual + verified in practice):
 - KVM enabled in OSD → Port Settings → **KVM Setting**. **KVM On = switches USB *and* video
   together; KVM Off = USB only.**
-- Mouse/keyboard must be plugged into **the specific USB port(s) on the back of the monitor**
-  designated for eKVM detection (check the port labels; "functionality may vary depending on
-  brands of the mouse").
+- Keyboard/mouse must be plugged into **the specific USB port on the back designated for eKVM
+  detection** — see the next section for which one that is on this desk.
 - Both upstream cables connected: USB-C (Mac mini) and USB-B (laptop).
 
-**Status 31.08: triggers not yet verified on this unit.** Once verified, the laptop side
-should ALSO implement Shift-double-tap synthesis (AHK: `Send +{Shift}` twice, < 0.5 s apart)
-so either machine can hand keyboard+mouse to the other with one shortcut. Do not build this
-until Dawid confirms the manual triggers work by hand.
+### Which rear port is the eKVM port
+
+- Numbered rear-panel diagram: **[images/p49w30-rear-ports.png](images/p49w30-rear-ports.png)**
+  (from the PSREF; legend: 1=USB-C · 2/4/5=USB-A · 3=audio · 6=RJ-45 · 7=TB4 Out · 8=TB4 In ·
+  9=USB-B · 10/11=HDMI · 12=DP). Lenovo's eKVM hookup drawing:
+  **[images/ekvm-hookup-lenovo.png](images/ekvm-hookup-lenovo.png)**.
+- The manual names no port number — the designated port is marked with an icon printed on the
+  plastic next to it. **Empirically on this desk:** the **Logitech Unifying receiver** (keyboard
+  + mouse) sits in a rear USB-A port on the monitor's root hub (downstream port 2; `ioreg`
+  locationID 0x03120000) — and since double-Shift works, **that port IS the eKVM port. Do not
+  move the receiver.** Occupancy of the hub: port 1 = internal Realtek LAN, port 2 = Logitech
+  receiver (eKVM), port 3 = sub-hub with the TIE microphone + Cisco Desk Camera 1080p,
+  port 4 = internal monitor HID.
+- If the receiver is ever moved and double-Shift stops working, move it back — the failure
+  mode is exactly "trigger dead because the receiver left the designated port".
+
+### Independence ruling (Dawid, 31.08) — do not re-couple
+
+The pane toggle (⌃⇧⌘D on Mac / Ctrl+Alt+D on the laptop) and the KVM (double-Shift) are
+**deliberately independent**: sometimes he wants to change screens without moving the
+keyboard+mouse. A Hammerspoon listener that fired the pane toggle on double-Shift was built
+briefly and removed at his request. Also, **synthetic Shift-taps from the OS can never trigger
+the eKVM** — HID traffic flows keyboard → monitor → computer, never back up — so no software
+shortcut can move the KVM. Double-tap the physical Shift key; that is the only way.
 
 ## Acceptance test (pane toggle)
 1. `GetValueValue 60` returns 4401 or 3889.

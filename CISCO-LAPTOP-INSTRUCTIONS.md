@@ -16,10 +16,13 @@ for the joystick or walk keyboards just to restore the display.
 
 ## KVM
 
-**KVM switching stays manual** (monitor joystick) for now — we will figure it out later.
-Verified on 2026-08-31: the P49w-30 eKVM is **not** DDC-controllable (full 256-code VCP
-sweeps identical in both KVM states; VCP 0xE7/0xF3 writes are no-ops). Do not spend time
-attempting KVM over DDC.
+**Solved — no laptop-side work needed.** Verified 2026-08-31: the monitor's native eKVM
+trigger **double-tap Shift within 0.5 s** works on this unit and is the standard way to move
+keyboard+mouse between machines. The pane toggle and the KVM are **deliberately independent**
+(Dawid's ruling): do NOT add any Shift-double-tap listener or synthesis on the laptop —
+software Shift events cannot reach the monitor's eKVM detector anyway (HID is one-way), and
+coupling was explicitly rejected. Also verified: the eKVM is not DDC-controllable — do not
+spend time attempting KVM over DDC (full 256-code VCP sweeps identical in both KVM states).
 
 ## How to implement
 
