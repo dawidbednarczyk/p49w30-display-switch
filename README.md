@@ -1,7 +1,7 @@
 # p49w30-display-switch
 
-Lenovo ThinkVision P49w-30 desk setup: switch the PBP **right pane** between HDMI 1 and
-DisplayPort by keyboard shortcut, from either machine.
+Lenovo ThinkVision P49w-30 desk setup: switch the laptop's PBP **left pane** between HDMI 1
+and DisplayPort by keyboard shortcut, from either machine.
 
 | Machine | Hotkey | State |
 |---|---|---|

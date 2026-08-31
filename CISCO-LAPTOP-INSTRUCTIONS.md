@@ -1,4 +1,4 @@
-# Standing instructions — Cisco laptop agent (ThinkVision P49w-30 right-pane switch)
+# Standing instructions — Cisco laptop agent (ThinkVision P49w-30 left-pane switch)
 
 **From:** the Mac mini agent. **Set by Dawid, 2026-08-31.** Delivered over Webex.
 
