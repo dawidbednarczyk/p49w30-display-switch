@@ -29,12 +29,46 @@ read 0x60 → keep `low = v % 256` → flip `high`: 0x11→0x0F or 0x0F→0x11 �
 
 `P49w30DisplaySwitch.lua` binds **Ctrl+Command+Shift+D** in Hammerspoon and uses the
 installed BetterDisplay CLI to read and write VCP `0x60`. It applies the same safety
-contract as the Windows implementation: only `4401`/`3889` are accepted, two identical
-reads six seconds apart are required, and the low byte is preserved.
+contract as the Windows implementation: only `4401`/`3889` are accepted for writes, two
+identical reads six seconds apart are required, and the low byte is preserved. If undocking
+leaves the Mac pane on the wrong input (low byte ≠ `49` but laptop high byte is still
+`15` or `17`), the hotkey **restores** the Mac to USB-C instead of refusing or blind-toggling.
 
 The live Hammerspoon configuration loads the repository module directly. BetterDisplay must
 remain running with CLI integration enabled. The binding and both hardware transitions were
-verified on the Mac mini on 2026-08-31; the monitor was left at HDMI 1 (`4401`).
+verified on 2026-08-31.
+
+> **Machine naming.** This document calls the Hammerspoon machine "the Mac mini". It is in fact
+> the **Cisco MacBook Pro** (`DBEDNARC-M-472T`, `Mac16,8`, MDM `macmdm.cisco.com`) - it owns the
+> left half over USB-C *and* the right half over the OWC hub's DisplayPort. HDMI 1 is the *other*
+> machine. See `rpi/disable-idle-pane-in-os/research.md`.
+
+## macOS display hand-off — the right half is disabled in the OS while the other machine has it
+
+Added 2026-09-14. **The problem:** the DisplayPort link from the OWC hub stays trained after the
+monitor hands the right PBP window to HDMI 1, so macOS kept enumerating a 2560x1440 half it could
+no longer show. Windows dragged there became invisible and unreachable.
+
+**The behaviour now:** every successful `0x60` write is followed by a BetterDisplay connection
+call on the right half's macOS display.
+
+| `0x60` high byte | Right pane shows | macOS |
+|---|---|---|
+| `15` (DisplayPort) | this Mac | display **connected** — both halves usable |
+| `17` (HDMI 1) | the other machine | display **disconnected** — windows evacuate to the remaining screens |
+
+The target screen is resolved by UUID: the `P49w-30` with the larger x origin, learned only while
+both halves are enumerated and cached in `hs.settings` under
+`P49w30DisplaySwitch.rightPaneUUID`. Windows that evacuate do **not** move back on reconnect.
+
+**Recovery — if a half is missing and the hotkey is not available:**
+
+```bash
+/opt/homebrew/bin/betterdisplaycli set -name="P49w-30" -connected=on
+```
+
+**Not covered:** changing the input from the monitor's OSD or by eKVM double-Shift bypasses the
+hotkey, so macOS will strand windows again. Press Ctrl+Command+Shift+D once to resynchronise.
 
 ## Windows installation
 
@@ -136,6 +170,61 @@ keyboard+mouse. A Hammerspoon listener that fired the pane toggle on double-Shif
 briefly and removed at his request. Also, **synthetic Shift-taps from the OS can never trigger
 the eKVM** — HID traffic flows keyboard → monitor → computer, never back up — so no software
 shortcut can move the KVM. Double-tap the physical Shift key; that is the only way.
+
+## One PBP half goes black — 2026-09-03
+
+**Symptom:** half the panel shows nothing. Feels like the Mac's Thunderbolt stopped sending
+video.
+
+**Most likely cause on this desk: `0x60` was set to `4401`.** With the current cabling the Mac
+feeds the monitor over **two** paths — Thunderbolt/USB-C (input `49`) and DisplayPort (input
+`15`, from the OWC Thunderbolt 5 Hub's DP output) — and owns **both** PBP halves. Writing
+`4401` re-assigns the second half to HDMI 1 (`17`, the Cisco laptop). If the laptop is not
+driving HDMI 1 right then, that half goes black and the Mac loses half its desktop.
+
+**Working value is `3889`, not `4401`.** See the 2026-09-03 10:01 section of `STATUS.md` for
+the evidence and the full byte-model correction.
+
+**Diagnose read-only from the Mac:**
+
+```bash
+/opt/homebrew/bin/betterdisplaycli get -name="P49w-30" -feature=ddc -vcp=0x60 -value
+displayplacer list        # count the "48 inch external screen" entries
+```
+
+Two `2560x1440` P49w-30 entries at adjacent origins = the Mac owns both halves (healthy).
+One entry = the Mac owns a single half and the other is assigned elsewhere.
+
+A dark half is **not** a dead Thunderbolt link if DDC reads still succeed — DDC rides the same
+connection, so a working read proves the link is up.
+
+**Fixes, in order:**
+1. **Re-assign the Mac's second half**: write the 16-bit value `3889`, never an 8-bit write.
+2. **Collapse PBP** so one machine fills all 5120x1440:
+   OSD → **Advanced settings → PIP/PBP → PIP/PBP → Off** (check **True split → Off** too).
+   Worth binding **True split** to OSD → **Quick settings → Right key** for one-press access.
+3. **If the Mac's half is genuinely dark and DDC also fails**, suspect the OWC hub, not the
+   monitor: power-cycle it, or cable the monitor straight to the MacBook to take it out of the
+   path.
+
+**`3889` is fragile across link events.** It holds indefinitely when undisturbed but reverts to
+`4401` on its own when the Mac's video link retrains (sleep/wake, undock, resolution change),
+most likely because OSD → **USB-B Source** is `Auto`/`HDMI`. Re-check `0x60` after any such
+event.
+
+**PBP itself has no software control.** BetterDisplay's `pip` feature is its own macOS overlay
+window, not the monitor's hardware PBP, and PBP has no MCCS-standard VCP code. Do **not** probe
+writes to find one.
+
+To make PBP scriptable, capture read-only snapshots either side of an OSD flip and diff them:
+
+```bash
+python3 tools/vcp_sweep.py --label pbp-on     # before the OSD change
+python3 tools/vcp_sweep.py --label pbp-off    # after the OSD change
+python3 tools/vcp_sweep.py --diff project_notes/vcp-sweeps/<A>.tsv project_notes/vcp-sweeps/<B>.tsv
+```
+
+`tools/vcp_sweep.py` only ever reads, so it is safe in any monitor state.
 
 ## Acceptance test (pane toggle)
 1. With PBP active and the Mac visible on the left, `GetValueValue 60` returns exactly
