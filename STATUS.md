@@ -34,6 +34,15 @@ the hub's DisplayPort (`15`). **HDMI 1 (`17`) is the other machine** — the one
 
 **Recovery if a half goes missing:** `betterdisplaycli set -name="P49w-30" -connected=on`.
 
+**User acceptance — 2026-09-14 16:40 CEST.** Dawid: *"great, save project status, works so far"*.
+Accepted in normal use, not only in the scripted round trip. State at acceptance:
+
+```text
+betterdisplaycli get -name="P49w-30" -feature=ddc -vcp=0x60 -value   →  3889,3889
+betterdisplaycli get -name="P49w-30" -connected                      →  on,on
+system_profiler SPDisplaysDataType | grep -c "P49w-30"               →  2
+```
+
 **Known gap:** OSD- or eKVM-driven input changes bypass the hotkey and will strand windows again;
 one press of Ctrl+Command+Shift+D resynchronises. No poller was added.
 
