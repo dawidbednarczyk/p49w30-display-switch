@@ -1,5 +1,39 @@
 # Project status
 
+## 2026-09-16 — disconnect restored without BetterDisplay Pro (trial expired)
+
+**Reported:** Dawid: *"recently we tried to disable second part of the screen when switching to
+mac mini -> it is not working now"*. Found with `0x60 = 4401` (right pane on HDMI 1) and both
+`P49w-30` halves still enumerated in macOS.
+
+**Cause:** `betterdisplaycli get -proAvailable` → `off`. Display connect/disconnect is a
+BetterDisplay **Pro** feature. The cask was installed 2026-08-31 17:45 and the Pro trial lapsed
+around 2026-09-14 17:45, about an hour after the 16:40 acceptance. Since then every
+`-connected` get or set returns `Failed.` and the Lua ignored that silently.
+
+**Fix:** `tools/pane-connect.swift` — a tiny Swift CLI that calls the private
+`CGSConfigureDisplayEnabled` (what BetterDisplay uses underneath) on a CGDirectDisplayID. The Lua
+now runs it after each `0x60` write, caches `hs.screen:id()` of the right half
+(`P49w30DisplaySwitch.rightPaneID` = `3`) instead of the UUID, because a disabled display cannot
+be resolved by UUID, and appends `WARNING: ...` to the hotkey notification when the macOS step
+fails instead of claiming success. DDC stays on the free `betterdisplaycli`.
+
+**Hardware-verified through the real hotkey path (`_G.P49w30DisplaySwitch.toggle()` via hs IPC):**
+
+```text
+3889 → 4401   halves 2 → 1    (hand off; right half disabled by pane-connect 3 off)
+4401 → 3889   halves 1 → 2    (reclaim; pane-connect 3 on; x=4072 back)
+```
+
+Left at `3889`, both halves connected. Contract suite 8/8 with `/opt/homebrew/bin/python3.14`.
+Binary is gitignored; build with `swiftc -O -o tools/pane-connect tools/pane-connect.swift`.
+
+**Recovery now:** `tools/pane-connect 3 on` (or replug USB-C). The old
+`betterdisplaycli ... -connected=on` recovery command no longer works without Pro.
+
+**Alternative not taken:** buying BetterDisplay Pro would have restored the old path unchanged.
+The helper removes the licence dependency entirely, so that purchase is now optional.
+
 ## 2026-09-14 — idle PBP half is now disabled in macOS (RPI `disable-idle-pane-in-os`)
 
 **Reported:** after handing the right half to the other machine, this laptop still enumerated two

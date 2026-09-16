@@ -7,12 +7,16 @@
 --   high byte 15 (DisplayPort via the OWC hub) — right window kept by this machine
 --   high byte 17 (HDMI 1)                      — right window handed to the other machine
 -- The DisplayPort link stays trained after the hand-off, so macOS keeps enumerating a half it
--- can no longer show and windows strand on it. The connection calls below follow every write.
+-- can no longer show and windows strand on it. tools/pane-connect follows every write to disable
+-- or re-enable that half in macOS.
 
 local M = {}
 
 local MODIFIERS = {"ctrl", "cmd", "shift"}
 local BETTERDISPLAY = "/opt/homebrew/bin/betterdisplaycli"
+-- BetterDisplay's own -connected switch is Pro-only (the trial ran out 2026-09-14); this helper
+-- does the same CGS call for free. Build: swiftc -O -o tools/pane-connect tools/pane-connect.swift
+local PANE_CONNECT = debug.getinfo(1, "S").source:match("^@(.*)/[^/]+$") .. "/tools/pane-connect"
 local MONITOR_NAME = "P49w-30"
 local MAC_INPUT_BYTE = 49 -- USB-C — this machine's LEFT pane, never toggled
 local PANE_MINE_BYTE = 0x0F -- DisplayPort — right pane stays with this machine
@@ -20,7 +24,7 @@ local PANE_OTHER_BYTE = 0x11 -- HDMI 1 — right pane goes to the other machine
 local HDMI1_VALUE = MAC_INPUT_BYTE + PANE_OTHER_BYTE * 256 -- 4401
 local DISPLAYPORT_VALUE = MAC_INPUT_BYTE + PANE_MINE_BYTE * 256 -- 3889
 local STABILITY_WAIT_SECONDS = 6
-local PANE_UUID_KEY = "P49w30DisplaySwitch.rightPaneUUID"
+local PANE_ID_KEY = "P49w30DisplaySwitch.rightPaneID"
 local KNOWN_VALUES = {
     [HDMI1_VALUE] = true,
     [DISPLAYPORT_VALUE] = true,
@@ -83,9 +87,9 @@ function M.paneConnectionState(value)
     return nil
 end
 
--- The right pane disappears from allScreens() once disconnected, so only learn its UUID while
--- both halves are enumerated; otherwise trust the cached one.
-local function rightPaneUUID()
+-- The right pane disappears from allScreens() once disconnected, so only learn its display ID
+-- while both halves are enumerated; otherwise trust the cached one.
+local function rightPaneID()
     local halves = {}
     for _, screen in ipairs(hs.screen.allScreens()) do
         if screen:name():find(MONITOR_NAME, 1, true) then
@@ -94,9 +98,9 @@ local function rightPaneUUID()
     end
     if #halves >= 2 then
         table.sort(halves, function(a, b) return a:fullFrame().x > b:fullFrame().x end)
-        hs.settings.set(PANE_UUID_KEY, halves[1]:getUUID())
+        hs.settings.set(PANE_ID_KEY, halves[1]:id())
     end
-    return hs.settings.get(PANE_UUID_KEY)
+    return hs.settings.get(PANE_ID_KEY)
 end
 
 -- Returns action ("toggle" | "restore"), nextValue, and a short description.
@@ -133,17 +137,31 @@ local function runBetterDisplay(arguments, callback)
 end
 
 -- Follow the DDC write: drop our half from macOS when the monitor hands it away, bring it back
--- when we take it. Never fatal — the register is already correct by this point.
+-- when we take it. Never fatal — the register is already correct by this point — but the
+-- callback receives a warning string so the user learns when the half was left stranded.
 local function applyPaneConnection(value, callback)
     local state = M.paneConnectionState(value)
-    local uuid = state and rightPaneUUID()
-    if not uuid then
-        callback()
+    local id = state and rightPaneID()
+    if not id then
+        callback(state and "Right pane display ID unknown; macOS connection unchanged.")
         return
     end
-    runBetterDisplay({ "set", "-uuid=" .. uuid, "-connected=" .. state }, function()
-        callback()
-    end)
+    if not hs.fs.attributes(PANE_CONNECT) then
+        callback("tools/pane-connect is missing; macOS connection unchanged.")
+        return
+    end
+    M.task = hs.task.new(PANE_CONNECT, function(exitCode, _, stdErr)
+        M.task = nil
+        if exitCode ~= 0 then
+            callback("pane-connect failed: " .. (stdErr or ""):gsub("%s+$", ""))
+        else
+            callback()
+        end
+    end, { tostring(id), state })
+    if not M.task or not M.task:start() then
+        M.task = nil
+        callback("pane-connect could not start.")
+    end
 end
 
 local function readValue(callback)
@@ -215,9 +233,9 @@ function M.toggle()
                         notify("BetterDisplay write failed: " .. errorOutput)
                         return
                     end
-                    applyPaneConnection(nextValue, function()
+                    applyPaneConnection(nextValue, function(warning)
                         M.busy = false
-                        notify(successMessage)
+                        notify(warning and (successMessage .. " WARNING: " .. warning) or successMessage)
                     end)
                 end)
             end)

@@ -13,3 +13,4 @@ __pycache__/
 *.key
 credentials.json
 .secrets-quarantine/
+tools/pane-connect

@@ -49,23 +49,40 @@ Added 2026-09-14. **The problem:** the DisplayPort link from the OWC hub stays t
 monitor hands the right PBP window to HDMI 1, so macOS kept enumerating a 2560x1440 half it could
 no longer show. Windows dragged there became invisible and unreachable.
 
-**The behaviour now:** every successful `0x60` write is followed by a BetterDisplay connection
-call on the right half's macOS display.
+**The behaviour now:** every successful `0x60` write is followed by `tools/pane-connect
+<display-id> on|off` on the right half's macOS display. That helper (16 lines of Swift) makes the
+private `CGSConfigureDisplayEnabled` call directly. It replaced `betterdisplaycli set -connected`
+on 2026-09-16: that switch is a **BetterDisplay Pro** feature and the trial that started with the
+2026-08-31 install expired on 2026-09-14, an hour after acceptance, after which every
+`-connected` get/set answered `Failed.` and the half stayed stranded. DDC reads and writes are
+free and still go through `betterdisplaycli`.
+
+Build once per machine (the binary is not tracked):
+
+```bash
+swiftc -O -o tools/pane-connect tools/pane-connect.swift
+```
 
 | `0x60` high byte | Right pane shows | macOS |
 |---|---|---|
 | `15` (DisplayPort) | this Mac | display **connected** — both halves usable |
 | `17` (HDMI 1) | the other machine | display **disconnected** — windows evacuate to the remaining screens |
 
-The target screen is resolved by UUID: the `P49w-30` with the larger x origin, learned only while
-both halves are enumerated and cached in `hs.settings` under
-`P49w30DisplaySwitch.rightPaneUUID`. Windows that evacuate do **not** move back on reconnect.
+The target screen is resolved by CGDirectDisplayID (`hs.screen:id()`): the `P49w-30` with the
+larger x origin, learned only while both halves are enumerated and cached in `hs.settings` under
+`P49w30DisplaySwitch.rightPaneID` (currently `3`). A disabled display no longer resolves by UUID or
+appears in `CGGetOnlineDisplayList`, which is why the ID is cached rather than the UUID. Windows
+that evacuate do **not** move back on reconnect. If the hotkey's notification ends with
+`WARNING: ...`, the DDC write succeeded but the macOS side did not follow; run the recovery below.
 
 **Recovery — if a half is missing and the hotkey is not available:**
 
 ```bash
-/opt/homebrew/bin/betterdisplaycli set -name="P49w-30" -connected=on
+~/Documents/claude_projects/p49w30-display-switch/tools/pane-connect 3 on
 ```
+
+Without a Pro licence `betterdisplaycli set -name="P49w-30" -connected=on` only prints `Failed.`
+and does nothing. Unplugging and replugging the USB-C cable also restores both halves.
 
 **Not covered:** changing the input from the monitor's OSD or by eKVM double-Shift bypasses the
 hotkey, so macOS will strand windows again. Press Ctrl+Command+Shift+D once to resynchronise.
