@@ -31,6 +31,16 @@ Binary is gitignored; build with `swiftc -O -o tools/pane-connect tools/pane-con
 **Recovery now:** `tools/pane-connect 3 on` (or replug USB-C). The old
 `betterdisplaycli ... -connected=on` recovery command no longer works without Pro.
 
+**User acceptance — 2026-09-16 16:05 CEST.** Dawid: *"save project status"* after the round trip
+above. State at acceptance:
+
+```text
+betterdisplaycli get -name="P49w-30" -feature=ddc -vcp=0x60 -value   →  3889,3889
+betterdisplaycli get -proAvailable                                    →  off
+system_profiler SPDisplaysDataType | grep -c "P49w-30"               →  2
+hs.settings P49w30DisplaySwitch.rightPaneID                           →  3
+```
+
 **Alternative not taken:** buying BetterDisplay Pro would have restored the old path unchanged.
 The helper removes the licence dependency entirely, so that purchase is now optional.
 
