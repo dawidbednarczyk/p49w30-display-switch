@@ -35,7 +35,42 @@ M.task = nil
 M.timer = nil
 
 local function notify(message)
+    print(os.date("%Y-%m-%d %H:%M:%S") .. " P49w-30: " .. message)
     hs.notify.new({ title = "P49w-30", informativeText = message }):send()
+end
+
+-- Disabling a display through CGS removes the screen but leaves its windows at their old
+-- coordinates, beyond every remaining screen, where nothing can reach them. Move each such window
+-- onto the surviving P49w-30 half (or the primary screen). Runs after a hand-off and whenever the
+-- screen set changes for any other reason (eKVM, OSD, sleep/wake).
+function M.rescueStrandedWindows()
+    local screens = hs.screen.allScreens()
+    local target = hs.screen.primaryScreen()
+    for _, screen in ipairs(screens) do
+        if screen:name():find(MONITOR_NAME, 1, true) then target = screen end
+    end
+    local area = target:frame()
+    local moved = 0
+    for _, window in ipairs(hs.window.allWindows()) do
+        local frame = window:frame()
+        local visible = false
+        for _, screen in ipairs(screens) do
+            -- Less than 40px on any screen counts as stranded; moveToScreen's bounds check
+            -- happily leaves a window with one pixel showing.
+            if screen:fullFrame():intersect(frame).w >= 40 then visible = true end
+        end
+        if not visible and frame.w > 0 then
+            window:setFrame(hs.geometry.rect(
+                area.x + 40, area.y + 40,
+                math.min(frame.w, area.w - 80), math.min(frame.h, area.h - 80)
+            ), 0)
+            moved = moved + 1
+        end
+    end
+    if moved > 0 then
+        print(os.date("%Y-%m-%d %H:%M:%S") .. " P49w-30: rescued " .. moved .. " stranded window(s)")
+    end
+    return moved
 end
 
 local function decodeBytes(value)
@@ -236,6 +271,9 @@ function M.toggle()
                     applyPaneConnection(nextValue, function(warning)
                         M.busy = false
                         notify(warning and (successMessage .. " WARNING: " .. warning) or successMessage)
+                        -- The screen list lags the CGS call by a moment; the watcher below covers
+                        -- the rest.
+                        hs.timer.doAfter(2, M.rescueStrandedWindows)
                     end)
                 end)
             end)
@@ -243,10 +281,14 @@ function M.toggle()
     end)
 end
 
-if _G.P49w30DisplaySwitch and _G.P49w30DisplaySwitch.hotkey then
-    _G.P49w30DisplaySwitch.hotkey:delete()
+if _G.P49w30DisplaySwitch then
+    if _G.P49w30DisplaySwitch.hotkey then _G.P49w30DisplaySwitch.hotkey:delete() end
+    if _G.P49w30DisplaySwitch.screenWatcher then _G.P49w30DisplaySwitch.screenWatcher:stop() end
 end
 M.hotkey = hs.hotkey.bind(MODIFIERS, "d", M.toggle)
+M.screenWatcher = hs.screen.watcher.new(function()
+    hs.timer.doAfter(2, M.rescueStrandedWindows)
+end):start()
 _G.P49w30DisplaySwitch = M
 
 return M

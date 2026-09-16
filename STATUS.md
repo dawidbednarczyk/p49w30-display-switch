@@ -1,5 +1,33 @@
 # Project status
 
+## 2026-09-16 (later) — stranded windows are now rescued after the hand-off
+
+**Reported:** Dawid: *"I used the shortcut again, but it did not disable the screen. Again, I had
+some windows that I couldn't reach."* Live state on inspection: `0x60 = 4401`, one `P49w-30`
+half in macOS — so the disconnect itself had worked.
+
+**Cause, reproduced:** disabling the half through `CGSConfigureDisplayEnabled` removes the screen
+but does not move its windows. TextEdit and the Hammerspoon console parked at x=4200/5300 and a
+real Chrome window at x=4072 all stayed there, beyond every remaining screen, invisible and
+unreachable. The 2026-09-14 claim that windows "evacuate" only held for BetterDisplay's own
+disconnect, which relocates windows itself; the licence-free helper does not. Two-half state looks
+identical from the user's chair, hence "it did not disable the screen".
+
+**Fix:** `M.rescueStrandedWindows()` in `P49w30DisplaySwitch.lua` — every window with fewer than
+40px on any live screen is placed 40px inside the surviving `P49w-30` half, size preserved. Runs
+2s after each hand-off and from an `hs.screen.watcher` on any screen-set change, so eKVM/OSD/wake
+paths are covered too. `hs.window:moveToScreen(..., ensureInScreenBounds)` was tried first and
+left windows with one pixel showing at x=4071; explicit `setFrame` replaced it. Notifications are
+now also printed to the Hammerspoon console with timestamps.
+
+**Verified through the hotkey path:** park TextEdit at x=4200 → hand off → `0x60 = 4401`, one half,
+TextEdit at x=1552 on the surviving half. Contract suite 10 assertions, OK.
+
+**Open:** one press at 16:40 (via IPC, before the console logging existed) changed nothing and
+left no trace; the next such press will show its reason in the console.
+
+Left at `4401` with one half, matching the state Dawid was in.
+
 ## 2026-09-16 — disconnect restored without BetterDisplay Pro (trial expired)
 
 **Reported:** Dawid: *"recently we tried to disable second part of the screen when switching to

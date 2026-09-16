@@ -71,8 +71,16 @@ swiftc -O -o tools/pane-connect tools/pane-connect.swift
 The target screen is resolved by CGDirectDisplayID (`hs.screen:id()`): the `P49w-30` with the
 larger x origin, learned only while both halves are enumerated and cached in `hs.settings` under
 `P49w30DisplaySwitch.rightPaneID` (currently `3`). A disabled display no longer resolves by UUID or
-appears in `CGGetOnlineDisplayList`, which is why the ID is cached rather than the UUID. Windows
-that evacuate do **not** move back on reconnect. If the hotkey's notification ends with
+appears in `CGGetOnlineDisplayList`, which is why the ID is cached rather than the UUID.
+
+**Windows do not evacuate on their own.** Disabling a display through CGS removes the screen but
+leaves every window on it at its old coordinates (x >= 4072), where no screen shows it. Reproduced
+2026-09-16: TextEdit, the Hammerspoon console and a Chrome window all stayed stranded after a
+hand-off. The script therefore runs `rescueStrandedWindows()` two seconds after each hand-off and
+from an `hs.screen.watcher` on every screen-set change (eKVM, OSD, sleep/wake included): any window
+with fewer than 40px on a live screen is placed 40px inside the surviving `P49w-30` half, size kept.
+Rescued windows do **not** move back on reconnect. Every notification is also printed to the
+Hammerspoon console with a timestamp, so a press that "did nothing" can be read back there. If the hotkey's notification ends with
 `WARNING: ...`, the DDC write succeeded but the macOS side did not follow; run the recovery below.
 
 **Recovery — if a half is missing and the hotkey is not available:**

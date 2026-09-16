@@ -127,6 +127,8 @@ class ToggleContractTests(unittest.TestCase):
             "rightPaneID",
             "applyPaneConnection(nextValue",
             "hs.task.new(PANE_CONNECT",
+            "rescueStrandedWindows",
+            "hs.screen.watcher.new",
             "PANE_MINE_BYTE = 0x0F",
             "PANE_OTHER_BYTE = 0x11",
             "Left pane restored to USB-C",
