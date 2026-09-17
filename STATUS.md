@@ -26,7 +26,13 @@ TextEdit at x=1552 on the surviving half. Contract suite 10 assertions, OK.
 **Open:** one press at 16:40 (via IPC, before the console logging existed) changed nothing and
 left no trace; the next such press will show its reason in the console.
 
-Left at `4401` with one half, matching the state Dawid was in.
+**User acceptance — 2026-09-17 09:50 CEST.** Dawid: *"save project status"* the next morning,
+after overnight use with the rescue in place. State at acceptance:
+
+```text
+betterdisplaycli get -name="P49w-30" -feature=ddc -vcp=0x60 -value   →  4401
+system_profiler SPDisplaysDataType | grep -c "P49w-30"               →  1
+```
 
 ## 2026-09-16 — disconnect restored without BetterDisplay Pro (trial expired)
 
