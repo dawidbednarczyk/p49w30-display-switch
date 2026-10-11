@@ -1,5 +1,33 @@
 # Project status
 
+## 2026-10-11 — BetterDisplay had been uninstalled by another agent; reinstalled, hotkey works again
+
+**Reported (via master-manager):** Ctrl+Cmd+Shift+D did nothing at 11:49. Hammerspoon and
+`tools/pane-connect` were fine. BetterDisplay was gone: no app, no `/opt/homebrew/bin/betterdisplaycli`,
+no cask. Every DDC read and write failed.
+
+**Cause:** not MDM. `/var/log/jamf.log` shows no BetterDisplay policy. On **2026-10-07 09:06** a
+Cursor MASTER_MANAGER session (`0c906f6a-ad55-4fed-9fcc-8b0a82dba720`) ran
+`brew uninstall --cask betterdisplay` and removed its login item. It had blamed BetterDisplay for dimming the built-in screen,
+and Dawid had asked *"do we need this betterdisplay, is it releated to my additonal screen s?"*.
+The session checked that Hammerspoon "never touches brightness" and missed that this switch
+calls `betterdisplaycli` for every DDC step. Evidence: Caskroom mtime 2026-10-07 09:06:04,
+BetterDisplay prefs last written 09:04, and brew output in that session's `store.db`
+(`Removing App '/Applications/BetterDisplay.app'`, `Unlinking Command Wrapper ... betterdisplaycli`).
+
+**Fix:** `brew install --cask betterdisplay` (5.1.1, free; Pro is not needed, `-proAvailable` = `off`).
+The first launch waited on Gatekeeper's "downloaded from the Internet" dialog, and the CLI hung
+until Dawid clicked Open. BetterDisplay is added as a hidden login item through System Events.
+The old prefs survived, including the 2026-10-07 built-in brightness reset to 1, so the dimming
+problem should not come back.
+
+**Verified:** `betterdisplaycli get -name="P49w-30" -feature=ddc -vcp=0x60 -value` → `3889`.
+Dawid confirmed at 12:00: *"it works now"*.
+
+**Guard for next time:** BetterDisplay is a hard dependency of this switch. Any agent that wants to
+remove it must first check `~/.hammerspoon/init.lua` (it loads `P49w30DisplaySwitch.lua`). Fallback
+if it is ever blocked: `m1ddc` (free, 16-bit `0x60` write). It was not needed this time.
+
 ## 2026-09-16 (later) — stranded windows are now rescued after the hand-off
 
 **Reported:** Dawid: *"I used the shortcut again, but it did not disable the screen. Again, I had
