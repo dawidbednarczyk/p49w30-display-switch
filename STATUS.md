@@ -332,3 +332,11 @@ and recovered again 2026-09-02).
 
 Project implementation is complete and accepted. The repository has no active work except
 the explicitly listed Cisco laptop installation and hardware acceptance steps above.
+
+## 2026-10-21 20:45 CEST — eKVM double-Shift dead (brief from master-manager)
+
+Software causes ruled out. Karabiner (empty profile) and Hammerspoon (double_shift.lua removed) can't
+affect what the monitor snoops upstream of the Mac. The keyboard is on the Bolt receiver over USB, and the BetterDisplay CLI works.
+Lead: the receiver now enumerates one hub level deeper (inside sub-hub 17ef:1090, port 3 → 2)
+than the 31.08 verified state. That points to a different rear port. Physical checks are in GUIDE.md
+§"2026-10-21". No OSD or DDC writes were made. Waiting for Dawid's physical check and re-test.

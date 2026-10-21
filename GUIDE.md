@@ -187,6 +187,36 @@ Requirements (manual + verified in practice):
 - If the receiver is ever moved and double-Shift stops working, move it back — the failure
   mode is exactly "trigger dead because the receiver left the designated port".
 
+### 2026-10-21 — double-Shift dead again: diagnosis
+
+Ruled out (software can't affect what the monitor sees; the monitor snoops HID *before* the Mac):
+- **Karabiner-Elements 16.3.0** (installed 7 Sep, empty profile, no device rules): it grabs the
+  receiver only inside macOS. It cannot change the USB traffic that the monitor's hub sees. Not the cause.
+- **Hammerspoon**: `double_shift.lua` has been deleted and no `flagsChanged` tap is loaded. Hammerspoon is ruled out for the same reason.
+- Keyboard is on the **Logi Bolt receiver (046d:c548)**, not Bluetooth (BT lists only the headset).
+- BetterDisplay 5.1.1 CLI works (`get … -vcp=0x60` → `4401`).
+
+**Lead: the receiver is in a different place in the hub tree than on 31.08.** On 31.08 it was a direct
+child of the monitor's top hub, next to the monitor's own HID device. Today the MacBook Pro goes through the OWC TB5 hub (`ioreg -p IOUSB`):
+
+```
+Lenovo USB2.0 Hub 17ef:108e
+├─ port 2  P49w-30 (monitor HID)
+└─ port 3  Lenovo USB2.1 sub-hub 17ef:1090
+   ├─ port 2  Logi USB Receiver   ← one level deeper than on 31.08
+   ├─ port 3  sub-hub 17ef:1092 → TIE microphone, Genesys HID
+   └─ port 4  Genesys HID 05e3:0155
+```
+
+Caveat: the 31.08 tree came from the Mac mini on USB-C, so the two trees are not strictly
+comparable. The deeper position still suggests that the receiver was moved (or swapped with the mic cable)
+into a port that is not the eKVM port.
+
+**Physical checks (Dawid):** (1) put the receiver in the rear USB-A port marked with the KVM
+icon; (2) OSD → KVM Setting → eKVM → Keyboard **On**, because firmware or a reset can clear it;
+(3) the laptop's USB-B cable must be connected and the laptop awake, otherwise there is
+nothing to switch to. Success test: after a double-Shift, `ioreg -p IOUSB | grep -c "USB Receiver"` on the Mac drops to `0`.
+
 ### Independence ruling (Dawid, 31.08) — do not re-couple
 
 The pane toggle (⌃⌘⇧D on Mac / Ctrl+Alt+D on the laptop) and the KVM (double-Shift) are
