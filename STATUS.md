@@ -345,3 +345,4 @@ than the 31.08 verified state. That points to a different rear port. Physical ch
 The Cisco Desk Camera at 5 Gb/s through the P49w-30's USB3 hubs loses isochronous packets (green/broken picture).
 A USB 2.0-only cable camera→monitor forces 480 Mb/s MJPEG: 0 errors. Details: `project_notes/2026-11-06_1735_status.md`,
 `rpi/camera-via-monitor-2026-11-06/`.
+**User acceptance — 2026-11-06 17:37 CEST.** Dawid checked the Webex picture: *"now it works, thanks"*.
