@@ -340,3 +340,8 @@ affect what the monitor snoops upstream of the Mac. The keyboard is on the Bolt 
 Lead: the receiver now enumerates one hub level deeper (inside sub-hub 17ef:1090, port 3 → 2)
 than the 31.08 verified state. That points to a different rear port. Physical checks are in GUIDE.md
 §"2026-10-21". No OSD or DDC writes were made. Waiting for Dawid's physical check and re-test.
+
+## 2026-11-06 17:35 CET — webcam green through the monitor: fixed with a USB 2.0 cable
+The Cisco Desk Camera at 5 Gb/s through the P49w-30's USB3 hubs loses isochronous packets (green/broken picture).
+A USB 2.0-only cable camera→monitor forces 480 Mb/s MJPEG: 0 errors. Details: `project_notes/2026-11-06_1735_status.md`,
+`rpi/camera-via-monitor-2026-11-06/`.

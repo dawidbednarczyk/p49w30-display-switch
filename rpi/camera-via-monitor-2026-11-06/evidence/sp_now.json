@@ -1,0 +1,177 @@
+{
+  "SPDisplaysDataType" : [
+    {
+      "_name" : "Apple M4 Pro",
+      "spdisplays_mtlgpufamilysupport" : "spdisplays_metal4",
+      "spdisplays_ndrvs" : [
+        {
+          "_name" : "Color LCD",
+          "_spdisplays_display-product-id" : "a061",
+          "_spdisplays_display-serial-number" : "fd626d62",
+          "_spdisplays_display-vendor-id" : "610",
+          "_spdisplays_display-week" : "0",
+          "_spdisplays_display-year" : "0",
+          "_spdisplays_displayID" : "1",
+          "_spdisplays_pixels" : "3024 x 1964",
+          "_spdisplays_resolution" : "1512 x 982 @ 120.00Hz",
+          "spdisplays_ambient_brightness" : "spdisplays_yes",
+          "spdisplays_connection_type" : "spdisplays_internal",
+          "spdisplays_display_type" : "spdisplays_built-in-liquid-retina-xdr",
+          "spdisplays_main" : "spdisplays_yes",
+          "spdisplays_mirror" : "spdisplays_off",
+          "spdisplays_online" : "spdisplays_yes",
+          "spdisplays_pixelresolution" : "spdisplays_3024x1964Retina"
+        },
+        {
+          "_name" : "P49w-30",
+          "_spdisplays_display-product-id" : "63db",
+          "_spdisplays_display-serial-number" : "58424231",
+          "_spdisplays_display-vendor-id" : "30ae",
+          "_spdisplays_display-week" : "7",
+          "_spdisplays_display-year" : "2026",
+          "_spdisplays_displayID" : "2",
+          "_spdisplays_pixels" : "2560 x 1440",
+          "_spdisplays_resolution" : "2560 x 1440 @ 60.00Hz",
+          "spdisplays_mirror" : "spdisplays_off",
+          "spdisplays_online" : "spdisplays_yes",
+          "spdisplays_pixelresolution" : "spdisplays_qhd",
+          "spdisplays_resolution" : "2560 x 1440 @ 60.00Hz",
+          "spdisplays_rotation" : "spdisplays_supported"
+        },
+        {
+          "_name" : "P49w-30",
+          "_spdisplays_display-product-id" : "63db",
+          "_spdisplays_display-serial-number" : "58424231",
+          "_spdisplays_display-vendor-id" : "30ae",
+          "_spdisplays_display-week" : "7",
+          "_spdisplays_display-year" : "2026",
+          "_spdisplays_displayID" : "3",
+          "_spdisplays_pixels" : "2560 x 1440",
+          "_spdisplays_resolution" : "2560 x 1440 @ 60.00Hz",
+          "spdisplays_mirror" : "spdisplays_off",
+          "spdisplays_online" : "spdisplays_yes",
+          "spdisplays_pixelresolution" : "spdisplays_qhd",
+          "spdisplays_resolution" : "2560 x 1440 @ 60.00Hz",
+          "spdisplays_rotation" : "spdisplays_supported"
+        }
+      ],
+      "spdisplays_vendor" : "sppci_vendor_Apple",
+      "sppci_bus" : "spdisplays_builtin",
+      "sppci_cores" : "16",
+      "sppci_device_type" : "spdisplays_gpu",
+      "sppci_model" : "Apple M4 Pro"
+    }
+  ],
+  "SPThunderboltDataType" : [
+    {
+      "_name" : "thunderboltusb4_bus_2",
+      "device_name_key" : "MacBook Pro",
+      "domain_uuid_key" : "D8CC5FD2-FAEE-4072-89F1-710E623FBED3",
+      "receptacle_1_tag" : {
+        "current_speed_key" : "Up to 120 Gb/s",
+        "link_status_key" : "0x100",
+        "receptacle_id_key" : "3",
+        "receptacle_status_key" : "receptacle_no_devices_connected"
+      },
+      "route_string_key" : "0",
+      "switch_uid_key" : "0x05ACF1A2DD33C022",
+      "vendor_name_key" : "Apple Inc."
+    },
+    {
+      "_name" : "thunderboltusb4_bus_1",
+      "device_name_key" : "MacBook Pro",
+      "domain_uuid_key" : "234E2123-5EAA-4897-982E-B5A3F8A2BA8D",
+      "receptacle_1_tag" : {
+        "current_speed_key" : "Up to 120 Gb/s",
+        "link_status_key" : "0x100",
+        "receptacle_id_key" : "2",
+        "receptacle_status_key" : "receptacle_no_devices_connected"
+      },
+      "route_string_key" : "0",
+      "switch_uid_key" : "0x05ACF1A2DD33C021",
+      "vendor_name_key" : "Apple Inc."
+    },
+    {
+      "_items" : [
+        {
+          "_items" : [
+            {
+              "_name" : "ThinkVision P49w-30 TBT4 monitor",
+              "device_id_key" : "0xA4B7",
+              "device_name_key" : "ThinkVision P49w-30 TBT4 monitor",
+              "device_revision_key" : "0x1",
+              "mode_key" : "usb_four",
+              "receptacle_2_tag" : {
+                "current_speed_key" : "Up to 40 Gb/s",
+                "link_status_key" : "0x7",
+                "micro_version_key" : "0.86.0",
+                "receptacle_status_key" : "receptacle_no_devices_connected"
+              },
+              "receptacle_upstream_ambiguous_tag" : {
+                "current_speed_key" : "20 Gb/s",
+                "link_status_key" : "0x2",
+                "micro_version_key" : "0.86.0",
+                "receptacle_status_key" : "receptacle_connected"
+              },
+              "route_string_key" : "501",
+              "switch_uid_key" : "0x808728BC44621000",
+              "switch_version_key" : "40.40",
+              "vendor_id_key" : "0x17EF",
+              "vendor_name_key" : "Lenovo"
+            }
+          ],
+          "_name" : "Thunderbolt 5 Hub",
+          "device_id_key" : "0xDE81",
+          "device_name_key" : "Thunderbolt 5 Hub",
+          "device_revision_key" : "0x1",
+          "mode_key" : "usb_four_v2",
+          "receptacle_2_tag" : {
+            "current_speed_key" : "Up to 120 Gb/s",
+            "link_status_key" : "0x7",
+            "micro_version_key" : "1.3.0",
+            "receptacle_status_key" : "receptacle_no_devices_connected"
+          },
+          "receptacle_3_tag" : {
+            "current_speed_key" : "20 Gb/s",
+            "link_status_key" : "0x2",
+            "micro_version_key" : "1.3.0",
+            "receptacle_status_key" : "receptacle_connected"
+          },
+          "receptacle_4_tag" : {
+            "current_speed_key" : "Up to 120 Gb/s",
+            "link_status_key" : "0x7",
+            "micro_version_key" : "1.3.0",
+            "receptacle_status_key" : "receptacle_no_devices_connected"
+          },
+          "receptacle_upstream_ambiguous_tag" : {
+            "current_speed_key" : "80 Gb/s",
+            "link_status_key" : "0x2",
+            "micro_version_key" : "1.3.0",
+            "receptacle_status_key" : "receptacle_connected"
+          },
+          "route_string_key" : "1",
+          "switch_uid_key" : "0x80878DFAB20D5100",
+          "switch_version_key" : "56.1",
+          "vendor_id_key" : "0x1E91",
+          "vendor_name_key" : "Other World Computing"
+        }
+      ],
+      "_name" : "thunderboltusb4_bus_0",
+      "device_name_key" : "MacBook Pro",
+      "domain_uuid_key" : "B60DA1E3-EC14-4DD5-9034-78264F8EE15F",
+      "receptacle_1_tag" : {
+        "current_speed_key" : "80 Gb/s",
+        "link_status_key" : "0x2",
+        "micro_version_key" : "0.0.0",
+        "receptacle_id_key" : "1",
+        "receptacle_status_key" : "receptacle_connected"
+      },
+      "route_string_key" : "0",
+      "switch_uid_key" : "0x05ACF1A2DD33C020",
+      "vendor_name_key" : "Apple Inc."
+    }
+  ],
+  "SPUSBDataType" : [
+
+  ]
+}

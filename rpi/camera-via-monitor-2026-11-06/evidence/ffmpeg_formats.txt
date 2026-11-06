@@ -1,0 +1,2 @@
+Unrecognized option 'list_options'.
+Error splitting the argument list: Option not found

@@ -1,0 +1,7 @@
+2026-11-06 16:34:00 via-monitor-360p 640x360 Cisco Desk Camera 1080p@00222340 speed=5 Gb/s ffmpeg=ok frame=15 isoch_errors=100
+2026-11-06 16:34:21 baseline-via-monitor 1920x1080 Cisco Desk Camera 1080p@00222340 speed=5 Gb/s ffmpeg=ok frame=15 isoch_errors=187
+2026-11-06 16:41:50 direct 1920x1080 Cisco Desk Camera 1080p@02200000 speed=5 Gb/s ffmpeg=ok frame=150 isoch_errors=0
+2026-11-06 16:42:07 direct-360p 640x360 Cisco Desk Camera 1080p@02200000 speed=5 Gb/s ffmpeg=ok frame=150 isoch_errors=0
+2026-11-06 16:52:23 via-monitor-light-on 1920x1080 Cisco Desk Camera 1080p@00222340 speed=5 Gb/s ffmpeg=ok frame=16 isoch_errors=242
+2026-11-06 17:34:50 usb2 1920x1080 Cisco Desk Camera 1080p@00133340 speed=480 Mb/s ffmpeg=ok frame=286 isoch_errors=0
+2026-11-06 17:35:07 usb2-720p 1280x720 Cisco Desk Camera 1080p@00133340 speed=480 Mb/s ffmpeg=ok frame=270 isoch_errors=0

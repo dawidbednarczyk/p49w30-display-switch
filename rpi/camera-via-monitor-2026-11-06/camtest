@@ -1,0 +1,14 @@
+#!/bin/zsh
+# camtest [label] [WxH] — stream the Cisco Desk Camera 10 s, report path, speed, frames, isoch errors.
+# ponytail: one fixed camera name; edit CAM if the camera changes.
+CAM="Cisco Desk Camera 1080p"; label=${1:-test}; sz=${2:-1920x1080}
+cd "${0:A:h}/evidence"
+loc=$(ioreg -p IOUSB -w0 | grep -o "$CAM@[0-9a-f]*" | head -1)
+spd=$(system_profiler SPUSBHostDataType 2>/dev/null | grep -A8 "$CAM:" | grep "Link Speed" | sed 's/.*: //')
+s=$(date '+%Y-%m-%d %H:%M:%S')
+ffmpeg -hide_banner -f avfoundation -framerate 30 -pixel_format nv12 -video_size $sz -i "$CAM:none" -t 10 -fps_mode passthrough -f rawvideo -y /dev/null > ff_last.log 2>&1 & p=$!
+sleep 15; kill $p 2>/dev/null && st=hung || st=ok
+e=$(date '+%Y-%m-%d %H:%M:%S')
+n=$(/usr/bin/log show --start "$s" --end "$e" --style compact --predicate "eventMessage CONTAINS 'Isochronous' AND eventMessage CONTAINS '$CAM'" 2>/dev/null | grep -c "transaction error")
+fr=$(tr "\r" "\n" < ff_last.log | grep -ao "frame= *[0-9]*" | tail -1 | tr -d " ")
+echo "$s $label $sz ${loc:-NOT-FOUND} speed=${spd:-?} ffmpeg=$st ${fr:-frame=0} isoch_errors=$n" | tee -a camtest_results.txt

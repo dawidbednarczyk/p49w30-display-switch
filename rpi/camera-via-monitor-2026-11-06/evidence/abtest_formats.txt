@@ -1,0 +1,3 @@
+1920x1080 via-monitor 16:29 isoch_errors=every frame (~30/s), ffmpeg got 0 frames in 3 min, killed
+1280x720 via-monitor 2026-11-06 16:32:28..2026-11-06 16:32:43 ffmpeg=hung frame=  150 isoch_errors=128
+640x360 via-monitor 2026-11-06 16:32:44..2026-11-06 16:32:59 ffmpeg=finished frame=  137 isoch_errors=70
